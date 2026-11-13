@@ -37,15 +37,20 @@ def main():
                 print("Please enter a prompt.")
                 continue
 
-            # Get a response
-            response = openai_client.responses.create(
-                model=model_deployment,
-                instructions="You are a helpful AI assistant that answers questions and provides information.",
-                input=input_text,
-                previous_response_id=last_response_id,
-            )
-            print(response.output_text)
-            last_response_id = response.id
+# Get a response
+            stream = openai_client.responses.create(
+             model=model_deployment,
+             instructions="You are a helpful AI assistant that answers questions and provides information.",
+             input=input_text,
+             previous_response_id=last_response_id,
+             stream=True
+)
+            for event in stream:
+             if event.type == "response.output_text.delta":
+              print(event.delta, end="")
+             elif event.type == "response.completed":
+              last_response_id = event.response.id
+             print()
             
 
     except Exception as ex:
